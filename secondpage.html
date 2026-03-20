@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EloFinder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Link to CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Link to Chart.js for graphing Elo history -->
+</head>
+
+<body class="bg-blue-200 text-stone-900 min-h-screen flex flex-col items-center justify-center p-4 font-sans">
+    <!--flex col is what gets the cards to stack up vertically-->
+    <div class = "w-full max-w-md bg-stone-100 rounded-xl shadow-2xl overflow-hidden border border-stone-100">
+        <h1 class="text-3xl font-bold text-center p-6 text-stone-800">
+            Your Club's Elo is: 
+        </h1>
+
+      
+
+
+        <div class="px-6 pb-6 text-center">
+            <p class="text-2xl font-semibold text-blue-600" id="clubName"></p>
+            <p class="text-4xl font-bold text-stone-800 mt-2" id="eloRating"></p>
+            <p class="text-sm text-stone-500 mt-1" id="date"></p>
+        </div>
+        <!--This is setting up the club name, elo rating, and date to be displayed-->
+        <div class="px-6">
+            <button onclick="window.location.href='firstpage.html'" class="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition duration-300">
+                Back to search
+            </button>
+        </div>
+        <!--simple goback button-->
+    </div>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const club = params.get('club');
+        const elo = params.get('elo');
+        //now the second page has the club and elo variables that were sent from the first page, so we can display them on the second page
+        //keep in mind, when elo is returned here, it's as a raw string filled with the dates/the elos(what the BST returns) and the top 10(what the max Heap returns), so we will have to chop it up
+        const eloData = elo.split('#');
+        const eloHistory = eloData[0]; // This is the part of the string that contains the date and rating history
+        const top10 = eloData[1]; // This is the part of the string that contains the top 10 ratings 
+
+        const history = eloHistory.split('|').map(item => {
+            const [date, rating] = item.split(',');
+            return { date, rating };
+        }); 
+        //split the elo string into a map where the date and rating is properly matched (it's return to us as "2025-08,2050.5...")
+        
+        
+        document.getElementById('clubName').textContent = club;
+        document.getElementById('eloRating').textContent = history[0].rating; // Display the most recent Elo rating
+        document.getElementById('date').textContent = history[0].date; // Display the most recent date
+        //this above displays the club rating and date to the user
+        
+        //now we create the dropdown menu below
+        const dropdown = document.createElement('select');
+        dropdown.className = "w-full p-3 mb-4 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500";
+        history.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.rating;
+            option.textContent = `${item.date}`;
+            dropdown.appendChild(option);
+        } );
+        document.querySelector('.px-6.pb-6').appendChild(dropdown)
+        //appends the dropwdown to the page
+        
+        
+        
+        dropdown.onchange = function() {
+            const selectedoption = history.find(item => item.rating === dropdown.value);
+            document.getElementById('eloRating').textContent = selectedoption.rating;
+            document.getElementById('date').textContent = selectedoption.date;
+        }
+        //once something is picked from the dropdown, this function allows the selected to be displayed to the user
+
+        if(top10 && top10.length > 0){
+            const top10List = document.createElement('ul');
+            top10List.className = "mt-4 text-left";
+            const top10Ratings = top10.split('|');
+            top10Ratings.forEach((rating, index) => {
+                const [date, clubRating] = rating.split(',');
+                const listItem = document.createElement('li');
+                listItem.textContent = `${index + 1}. ${rating}`;
+                top10List.appendChild(listItem);
+            });
+            document.querySelector('.px-6.pb-6').appendChild(top10List);
+        }
+    </script>
+    <!--The top ten leaderboard isnt actually initialized/created until the max heap is populated -->
+
+
+    <div class="w-full max-w-md bg-stone-100 rounded-xl shadow-2xl overflow-hidden border border-stone-100 mt-6 p-6">
+        <h2 class="text-2xl font-bold text-center mb-4 text-stone-800">Elo Rating History</h2>
+        <canvas id="eloChart"></canvas>
+    </div>
+
+
+    <script>
+    const chartskeleton = [...history].reverse();//reverse the history so that the graph goes from oldest to newest, instead of newest to oldest
+    const chartdata = {
+        labels: chartskeleton.map(item => item.date),
+        datasets: [{
+            label: 'Elo Rating',
+            data: chartskeleton.map(item => parseFloat(item.rating)),
+            fill: false,
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }]
+    }; 
+
+    const ctx = document.getElementById('eloChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: chartdata,
+    options: {
+        responsive: true,
+        scales: {
+            x: { ticks: { maxTicksLimit: 10 } },
+            y: { title: { display: true, text: 'Elo Rating' } }
+        }
+    }
+});
+//creating the chart, now we had to use an extention called chart.js to create said chart
+</script>
+</body>
+

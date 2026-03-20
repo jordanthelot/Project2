@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EloFinder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+     <!-- Link to CSS -->
+</head>
+
+<body class="bg-blue-200 text-stone-900 min-h-screen flex items-start justify-center p-4 font-sans">
+<!--This just sets the background/text and centers the text-->
+<!--"items-center essentially tells the program the text should be centered, in this case we want it at the top of the page, so we chose items-start"-->
+
+<div class = "w-full max-w-md bg-stone-100 rounded-xl shadow-2xl overflow-hidden border border-stone-100">
+    <!--This creates the "card" where all the text/info is going to be inputted-->
+
+
+    <h1 class="text-3xl font-bold text-center p-6 text-stone-800">
+        Welcome to EloFinder!
+    </h1>
+    <!--This is the header-->
+
+        <div class = "px-6 pb-6">
+            <input type="text" id="club" placeholder="Enter your team's name!" class="w-full p-3 mb-4 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <!--Making the inputbox, px-6 and pb-6 provide padding, everything after the 2nd class is all stylistic things -->
+            
+            <p id="error" class="text-red-500 text-sm mb-4 hidden"></p>
+
+
+
+            <button type="button" onclick="doSearch()" class="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition duration-300">
+                Find Your Elo!
+            </button>
+            <!--Creating the button for the user to click-->
+            <!--Dosearch function essentially sends the response to second.html to display-->
+        </div>
+    
+    <script>
+        async function doSearch(){
+            const club = document.getElementById("club").value;
+
+            if (!club) {
+                alert("Please enter a club name.");
+                return;
+            }
+
+            const response = await fetch(`http://localhost:8080/search?command=${encodeURIComponent(club)}`);
+            //this is actually what activates the python backend(the url the python backend will be parsing/reading), which in turn activates the c++ backend
+            const elo = await response.text();
+            //wait for the actual elo result to be sent back from the backend
+
+            if (elo.startsWith("Club not found")) {
+                alert("No Elo rating found for the specified club.");
+                return;
+            }
+
+            window.location.href = `secondpage.html?club=${encodeURIComponent(club)}&elo=${encodeURIComponent(elo)}`;
+            //this sends the club and the respective elo rating back to the second page to be displayed
+        }
+    </script>
+
+</div>
+</body>
+</html>
