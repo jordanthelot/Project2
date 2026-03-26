@@ -280,7 +280,11 @@ int main(int argc, char* argv[]) {
         getline(ss, country, ',');
         getline(ss, eloRating, ',');
         //Remember to convert elorating to a double using stod
+        try {
         root = insert(root, toLowerCase(name), stod(eloRating), date);
+    } catch (...) {
+        continue; // skip any malformed lines
+    }
     };
 
     string clubName = toLowerCase(argv[1]); //Convert to lowercase for case insensitive search

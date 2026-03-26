@@ -34,20 +34,20 @@
         <!--simple goback button-->
     </div>
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const club = params.get('club');
-        const elo = params.get('elo');
+        const club = sessionStorage.getItem('club');
+        const elo = sessionStorage.getItem('elo');
         //now the second page has the club and elo variables that were sent from the first page, so we can display them on the second page
         //keep in mind, when elo is returned here, it's as a raw string filled with the dates/the elos(what the BST returns) and the top 10(what the max Heap returns), so we will have to chop it up
         const eloData = elo.split('#');
         const eloHistory = eloData[0]; // This is the part of the string that contains the date and rating history
         const top10 = eloData[1]; // This is the part of the string that contains the top 10 ratings 
 
-        const history = eloHistory.split('|').map(item => {
+        const history = eloHistory.split('|').filter(item => item.length > 0).map(item => {
             const [date, rating] = item.split(',');
             return { date, rating };
         }); 
         //split the elo string into a map where the date and rating is properly matched (it's return to us as "2025-08,2050.5...")
+        //also, filter is used to get rid of any empty strings that may be created from splitting the string, which could cause errors later on- it's used here bc the heap functionality isn't finished yet
         
         
         document.getElementById('clubName').textContent = club;

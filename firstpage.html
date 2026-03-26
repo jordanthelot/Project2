@@ -55,7 +55,10 @@
                 return;
             }
 
-            window.location.href = `secondpage.html?club=${encodeURIComponent(club)}&elo=${encodeURIComponent(elo)}`;
+            sessionStorage.setItem("club", club);
+            sessionStorage.setItem("elo", elo);//this is just storing the club and elo in session storage, which is a way to store data on the client side that persists across page reloads but is cleared when the browser is closed. This way, if the user goes back to the first page, their previous search will still be there.
+            //without this, you would have to pass the data through the urls, and since we are passing so many different dates and their respective elos, that's just inefficient
+            window.location.href = "secondpage.html";
             //this sends the club and the respective elo rating back to the second page to be displayed
         }
     </script>
