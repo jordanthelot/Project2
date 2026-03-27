@@ -3,7 +3,9 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <queue>
 using namespace std;
+
 
 //Minimum degree for the b-tree (t=3 means each node can hold 2t-1 = 5 keys max)
 const int T = 3;
@@ -258,6 +260,37 @@ ClubNode* findNode(BTreeNode* root, string clubName) {
     return findNode(root->children[i], clubName);
 }
 
+string getTop10ForClub(ClubNode* club){
+    // creates the priority heap
+    std::priority_queue <std::pair<double, std::string>> leaderboard;
+
+    // initializes a result string to store the result
+    string result; 
+
+    // loops through the ratings pushing the elo, date pair onto the heap
+    for(int i = 0; i < club -> eloRatings.size(); i++){
+        // pushes the eloRating, date pair onto the heap
+        leaderboard.push({club -> eloRatings[i], club -> dates[i]});
+        }
+    // extracts only the top 10
+    for(int i = 0; i < 10 && !leaderboard.empty(); i++){
+        // stores the entry to a variable before popping it off the top 
+        auto entry = leaderboard.top();
+        leaderboard.pop();
+
+        // builds the string
+        result += entry.second + "," + std::to_string(entry.first);
+        
+        // makes sure the | is not added to the last entry
+        if (i < 9 && !leaderboard.empty()) {
+            result += "|";
+        }   
+    }
+    // returns the result string
+    return result;
+}
+
+
 int main(int argc, char* argv[]) {
     //Argc and argv capture what's being written in the terminal
     //We run ./server "clubName", where clubName is what the user typed in
@@ -291,9 +324,14 @@ int main(int argc, char* argv[]) {
     string result = lookup(root, clubName);  //Search the b-tree for the club
 
     ClubNode* foundNode = findNode(root, clubName);
-    //std::string top10 = getTop10ForClub(foundNode); //Placeholder for the heap function
+    if(foundNode == nullptr) {
+        std::cout << result; //Club not found, just print that
+        delete root;
+        return 0;
+    }
+    std::string top10 = getTop10ForClub(foundNode); //Placeholder for the heap function
 
-    std::cout << result + "#";
+    std::cout << result + "#" + top10;
 
     //After # is where the heap will be placed
 

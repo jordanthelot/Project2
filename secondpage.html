@@ -26,6 +26,20 @@
             <p class="text-sm text-stone-500 mt-1" id="date"></p>
         </div>
         <!--This is setting up the club name, elo rating, and date to be displayed-->
+       
+       
+        <div class="px-6 mb-4">
+            <button onclick="toggletop10()" class="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition duration-300">
+                SEE TOP 10 ELO RATINGS
+            </button>
+        </div>
+
+        <div id="top10" class="px-6 pb-4" style="display:none;"></div>
+
+        <!--simple button to see the top 10 elo ratings, triggers func top10-->
+
+        
+        
         <div class="px-6">
             <button onclick="window.location.href='firstpage.html'" class="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition duration-300">
                 Back to search
@@ -44,14 +58,15 @@
 
         const history = eloHistory.split('|').filter(item => item.length > 0).map(item => {
             const [date, rating] = item.split(',');
-            return { date, rating };
+            const actualrating = rating.split('.')[0] + '.' + rating.split('.')[1].slice(0,2); // Get the integer part of the rating + the first two decimal digits
+            return { date, actualrating };
         }); 
         //split the elo string into a map where the date and rating is properly matched (it's return to us as "2025-08,2050.5...")
         //also, filter is used to get rid of any empty strings that may be created from splitting the string, which could cause errors later on- it's used here bc the heap functionality isn't finished yet
         
         
         document.getElementById('clubName').textContent = club;
-        document.getElementById('eloRating').textContent = history[0].rating; // Display the most recent Elo rating
+        document.getElementById('eloRating').textContent = history[0].actualrating; // Display the most recent Elo rating
         document.getElementById('date').textContent = history[0].date; // Display the most recent date
         //this above displays the club rating and date to the user
         
@@ -60,7 +75,7 @@
         dropdown.className = "w-full p-3 mb-4 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500";
         history.forEach(item => {
             const option = document.createElement('option');
-            option.value = item.rating;
+            option.value = item.actualrating;
             option.textContent = `${item.date}`;
             dropdown.appendChild(option);
         } );
@@ -70,11 +85,21 @@
         
         
         dropdown.onchange = function() {
-            const selectedoption = history.find(item => item.rating === dropdown.value);
-            document.getElementById('eloRating').textContent = selectedoption.rating;
+            const selectedoption = history.find(item => item.actualrating === dropdown.value);
+            document.getElementById('eloRating').textContent = selectedoption.actualrating;
             document.getElementById('date').textContent = selectedoption.date;
         }
         //once something is picked from the dropdown, this function allows the selected to be displayed to the user
+        function toggletop10() {
+            const top10Container = document.getElementById('top10');
+            if (top10Container.style.display === 'none' || !top10Container.style.display) {
+                top10Container.style.display = 'block';
+            } else {
+                top10Container.style.display = 'none';
+            }
+        }
+        //this is where the top 10 container is used, it just toggles to see if the top10 exists and this will determine if the button is shown or not
+
 
         if(top10 && top10.length > 0){
             const top10List = document.createElement('ul');
@@ -82,15 +107,18 @@
             const top10Ratings = top10.split('|');
             top10Ratings.forEach((rating, index) => {
                 const [date, clubRating] = rating.split(',');
+                const formattedrating = clubRating.split('.')[0] + '.' + clubRating.split('.')[1].slice(0, 2);
                 const listItem = document.createElement('li');
-                listItem.textContent = `${index + 1}. ${rating}`;
+                listItem.textContent = `${index + 1}. ${date} - ${formattedrating}`;
                 top10List.appendChild(listItem);
             });
-            document.querySelector('.px-6.pb-6').appendChild(top10List);
+            document.getElementById('top10').appendChild(top10List);
+            //Add top10 to a container, which will be used 
         }
     </script>
     <!--The top ten leaderboard isnt actually initialized/created until the max heap is populated -->
 
+    
 
     <div class="w-full max-w-md bg-stone-100 rounded-xl shadow-2xl overflow-hidden border border-stone-100 mt-6 p-6">
         <h2 class="text-2xl font-bold text-center mb-4 text-stone-800">Elo Rating History</h2>
@@ -104,7 +132,7 @@
         labels: chartskeleton.map(item => item.date),
         datasets: [{
             label: 'Elo Rating',
-            data: chartskeleton.map(item => parseFloat(item.rating)),
+            data: chartskeleton.map(item => parseFloat(item.actualrating)),
             fill: false,
             borderColor: 'rgb(75, 192, 192)',
             tension: 0.1

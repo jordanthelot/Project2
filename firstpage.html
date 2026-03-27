@@ -38,14 +38,15 @@
     
     <script>
         async function doSearch(){
-            const club = document.getElementById("club").value;
-
+            const club = document.getElementById("club").value.trim();
+            
+            const clubwithoutaccent = club.normalize("NFD").replace(/[\u0300-\u036f]/g, "");//sometimes, the user will input a club with an accent. this is to normalize it so our lookup can work
             if (!club) {
                 alert("Please enter a club name.");
                 return;
             }
 
-            const response = await fetch(`http://localhost:8080/search?command=${encodeURIComponent(club)}`);
+            const response = await fetch(`http://localhost:8080/search?command=${encodeURIComponent(clubwithoutaccent)}`);
             //this is actually what activates the python backend(the url the python backend will be parsing/reading), which in turn activates the c++ backend
             const elo = await response.text();
             //wait for the actual elo result to be sent back from the backend
