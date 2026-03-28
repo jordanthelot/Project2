@@ -23,7 +23,7 @@ g++ -std=c++17 -o server functions.c++
 4. Start the Python server
 python3 server.py
 
-5. Before using the go live feature, you can see what clubs are availible to search by using:
+5. Before using the activating the python server, you can see what clubs are availible to search by using:
 cut -d',' -f2 EloRatings.csv | sort -u
 
 6. Use the Go live feature in bottom right corner when on firstpage.html to start using the website
